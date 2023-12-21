@@ -42,6 +42,9 @@ describe("Given I am connected as an employee", () => {
 			//to-do write expect expression
 			const WindowIcon = screen.getByTestId("icon-window");
 			await waitFor(() => WindowIcon);
+			//Ajouter la fonction expect() pour effectuer une assertion de test pour vérifier
+			// que l'élément WindowIcone a la classe "active-icon"
+			expect(WindowIcon).toHaveClass("active-icon");
 		});
 
 		// Test pour vérifier que les notes de frais s'affichent par ordre décroissant
@@ -60,7 +63,7 @@ describe("Given I am connected as an employee", () => {
 		});
 	});
 
-	// test pour vérifier que notre Loader s'affiche bien.
+	// test pour vérifier que le Loader s'affiche bien.
 	describe("When I am on bills page but it is loading", () => {
 		test("Then, Loading page should be rendered", () => {
 			document.body.innerHTML = BillsUI({ loading: true });
