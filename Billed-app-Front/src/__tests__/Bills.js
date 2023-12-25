@@ -5,15 +5,20 @@
 import "@testing-library/jest-dom";
 
 import { screen, waitFor, within } from "@testing-library/dom";
-import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import BillsUI from "../views/BillsUI.js";
-import { bills } from "../fixtures/bills.js";
-import { ROUTES_PATH } from "../constants/routes";
-import { localStorageMock } from "../__mocks__/localStorage.js";
-import router from "../app/Router.js";
 import Bills from "../containers/Bills.js";
+import { bills } from "../fixtures/bills.js";
+import { ROUTES_PATH, ROUTES } from "../constants/routes";
+import { localStorageMock } from "../__mocks__/localStorage.js";
+import mockStore from "../__mocks__/store";
+import router from "../app/Router.js";
+import { formatStatus } from "../app/format.js";
+import ErrorPage from "../views/ErrorPage.js";
+
 import { log } from "console";
+
+jest.mock("../app/store", () => mockStore);
 
 //Tests pour s'assurer que la page bills fonctionne correctement pour un utilisateur connecté en tant qu'employé.
 describe("Given I am connected as an employee", () => {
@@ -61,13 +66,140 @@ describe("Given I am connected as an employee", () => {
 			//Vérifier que les dates récupérées sont égales aux dates triées
 			expect(dates).toEqual(datesSorted);
 		});
+
+		// test pour vérifier que IconsEye apparaît pour chaque note de frais
+		test("Then iconsEye should be appear for each Bills ", () => {
+			document.body.innerHTML = BillsUI({ data: bills });
+			const iconsEye = screen.getAllByTestId("icon-eye");
+			expect(iconsEye).toBeTruthy();
+		});
 	});
 
 	// test pour vérifier que le Loader s'affiche bien.
-	describe("When I am on bills page but it is loading", () => {
+	describe("When I am on Bills page but it is loading", () => {
 		test("Then, Loading page should be rendered", () => {
 			document.body.innerHTML = BillsUI({ loading: true });
 			expect(screen.getAllByText("Loading...")).toBeTruthy();
+		});
+	});
+
+	// Test pour vérifier que le message d'erreur est visible lorsqu'une erreur est reçue du back-end.
+	describe("When I am on the Bills page and the back-end sends an error message", () => {
+		test("Then the error page should be rendered", () => {
+			document.body.innerHTML = BillsUI({ error: "error message" });
+			expect(screen.getByText("Erreur")).toBeTruthy();
+		});
+	});
+
+	//Vérifie que le formulaire de la page  newBill s'affiche bien
+	//qquand on clique sur le bouton 'Nouvelle note de frais'
+	describe("When I am on Bills page and I click on the new bill button ", () => {
+		test("Then I should navigate to newBill page ", () => {
+			const onNavigate = (pathname) => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+			Object.defineProperty(window, "localStorage", { value: localStorageMock });
+			window.localStorage.setItem(
+				"user",
+				JSON.stringify({
+					type: "Employee",
+				})
+			);
+			// construire le body via BillsUI
+			document.body.innerHTML = BillsUI({ bills });
+
+			// déclarer l'objet Bills
+			const bill = new Bills({
+				document,
+				onNavigate,
+				store: null,
+				localStorage: window.localStorage,
+			});
+
+			//Déclarer la simulation de la fonction handleClickNewBill à l'aide de jest.fn()
+			const handleClickNewBill = jest.fn(bill.handleClickNewBill);
+			//récupèrer l'élément btn-new-bill via l’attribut data-testid grace au sélecteur getByTestId
+			const btnNewBill = screen.getByTestId("btn-new-bill");
+			btnNewBill.addEventListener("click", handleClickNewBill);
+			//user-event simule entièrement les interactions utilisateurs
+			userEvent.click(btnNewBill);
+
+			//pour s'assurer que la fonction handleClickNewBill a été appelée avec des arguments spécifiques.
+			expect(handleClickNewBill).toHaveBeenCalled();
+
+			//pour tester si la chaine est true
+			expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+		});
+	});
+
+	// test pour Vérifier que la modale contenant le justificatif de la note de frais apparaît bien
+	describe("When I am on Bills Page and click on an eyed icon button", () => {
+		let billsContainer;
+		let onNavigate;
+		let modaleFile;
+
+		beforeEach(() => {
+			onNavigate = (pathname) => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+
+			billsContainer = new Bills({
+				document,
+				onNavigate,
+				store: null,
+				localStorage: window.localStorage,
+			});
+
+			document.body.innerHTML = BillsUI({ data: bills });
+
+			modaleFile = document.getElementById("modaleFile");
+			$.fn.modal = jest.fn(() => modaleFile.classList.add("show"));
+		});
+
+		test("Then I should check if modal is diplayed", () => {
+			//const handleClickIconEye = jest.fn(billsContainer.handleClickIconEye(iconEye));
+			const handleClickIconEye = jest.fn((icon) => billsContainer.handleClickIconEye(icon));
+
+			const iconEye = screen.getAllByTestId("icon-eye");
+			//const iconEye = screen.getAllByTestId("icon-eye")[0];
+			//iconEye.addEventListener("click", handleClickIconEye);
+			//userEvent.click(iconEye);
+			//expect(handleClickIconEye).toHaveBeenCalled();
+			iconEye.forEach((icon) => {
+				icon.addEventListener("click", handleClickIconEye(icon));
+				userEvent.click(icon);
+				expect(handleClickIconEye).toHaveBeenCalled();
+			});
+			expect(modaleFile).toHaveClass("show");
+			expect(screen.getByText("Justificatif")).toBeTruthy();
+			expect(bills[0].fileUrl).toBeTruthy();
+			expect(bills[0].fileName).toBeTruthy();
+		});
+
+		//Tester que le modal est fermé lorsque on clique sur le bouton de fermeture
+		test("then I should closed the modal when the close button is clicked", () => {
+			const btnCloseModale = modaleFile.querySelector(".close");
+			userEvent.click(btnCloseModale);
+			expect(modaleFile).not.toHaveClass("show");
+		});
+	});
+
+	//Test pour vérifier que la fonction formatStatus(status) égale à l'une des valeurs suivante :
+	// pending, accepted ou refused
+	describe("When I am on the Bills page and I get the status of a bill ", () => {
+		test("Then it should return ' En attente' for a status of 'pending'", () => {
+			const status = "pending";
+			expect(formatStatus(status)).toEqual("En attente");
+		});
+
+		test("Then it should return 'Accepté' for a status of 'accepted'", () => {
+			const status = "accepted";
+			expect(formatStatus(status)).toEqual("Accepté");
+		});
+
+		test("Then it should return 'Refused' for a status of 'refused'", () => {
+			const status = "refused";
+			expect(formatStatus(status)).toEqual("Refused");
 		});
 	});
 });

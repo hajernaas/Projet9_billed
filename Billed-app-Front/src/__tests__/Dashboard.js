@@ -44,6 +44,7 @@ describe("Given I am connected as an Admin", () => {
 		});
 	});
 
+	// Test pour vérifier que le message d'erreur est visible lorsqu'une erreur est reçue du back-end.
 	describe("When I am on Dashboard page but back-end send an error message", () => {
 		test("Then, Error page should be rendered", () => {
 			document.body.innerHTML = DashboardUI({ error: "some error message" });
@@ -51,6 +52,7 @@ describe("Given I am connected as an Admin", () => {
 		});
 	});
 
+	//Quand on clique sur la flèche on doit Verifier qu'il y a une liste des tickets qui apparaît dans la page Dashboard
 	describe("When I am on Dashboard page and I click on arrow", () => {
 		test("Then, tickets list should be unfolding, and cards should appear", async () => {
 			const onNavigate = (pathname) => {
