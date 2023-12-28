@@ -89,6 +89,7 @@ describe("Given I am connected as an Admin", () => {
 			expect(handleShowTickets1).toHaveBeenCalled();
 			await waitFor(() => screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`));
 			expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy();
+
 			icon2.addEventListener("click", handleShowTickets2);
 			userEvent.click(icon2);
 			expect(handleShowTickets2).toHaveBeenCalled();
@@ -124,13 +125,16 @@ describe("Given I am connected as an Admin", () => {
 				bills: bills,
 				localStorage: window.localStorage,
 			});
+
 			document.body.innerHTML = DashboardUI({ data: { bills } });
+
 			const handleShowTickets1 = jest.fn((e) => dashboard.handleShowTickets(e, bills, 1));
 			const icon1 = screen.getByTestId("arrow-icon1");
 			icon1.addEventListener("click", handleShowTickets1);
 			userEvent.click(icon1);
 			expect(handleShowTickets1).toHaveBeenCalled();
 			expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy();
+
 			const iconEdit = screen.getByTestId("open-bill47qAXb6fIm2zOKkLzMro");
 			userEvent.click(iconEdit);
 			expect(screen.getByTestId(`dashboard-form`)).toBeTruthy();
@@ -166,6 +170,7 @@ describe("Given I am connected as an Admin", () => {
 			userEvent.click(icon1);
 			expect(handleShowTickets1).toHaveBeenCalled();
 			expect(screen.getByTestId(`open-bill47qAXb6fIm2zOKkLzMro`)).toBeTruthy();
+
 			const iconEdit = screen.getByTestId("open-bill47qAXb6fIm2zOKkLzMro");
 			userEvent.click(iconEdit);
 			userEvent.click(iconEdit);
@@ -211,6 +216,7 @@ describe("Given I am connected as Admin, and I am on Dashboard page, and I click
 			const handleAcceptSubmit = jest.fn((e) => dashboard.handleAcceptSubmit(e, bills[0]));
 			acceptButton.addEventListener("click", handleAcceptSubmit);
 			fireEvent.click(acceptButton);
+
 			expect(handleAcceptSubmit).toHaveBeenCalled();
 			const bigBilledIcon = screen.queryByTestId("big-billed-icon");
 			expect(bigBilledIcon).toBeTruthy();
@@ -294,8 +300,8 @@ describe("Given I am a user connected as Admin", () => {
 			const root = document.createElement("div");
 			root.setAttribute("id", "root");
 			document.body.append(root);
-			router();
 
+			router();
 			window.onNavigate(ROUTES_PATH.Dashboard);
 
 			await waitFor(() => screen.getByText("Validations"));

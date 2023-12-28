@@ -96,7 +96,6 @@ describe("Given I am connected as an employee", () => {
 			const onNavigate = (pathname) => {
 				document.body.innerHTML = ROUTES({ pathname });
 			};
-
 			Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem(
 				"user",
@@ -122,7 +121,6 @@ describe("Given I am connected as an employee", () => {
 			btnNewBill.addEventListener("click", handleClickNewBill);
 			//user-event simule entièrement les interactions utilisateurs
 			userEvent.click(btnNewBill);
-
 			//pour s'assurer que la fonction handleClickNewBill a été appelée avec des arguments spécifiques.
 			expect(handleClickNewBill).toHaveBeenCalled();
 			//pour tester si la chaine est true
