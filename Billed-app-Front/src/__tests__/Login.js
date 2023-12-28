@@ -8,6 +8,7 @@ import { ROUTES } from "../constants/routes";
 import { fireEvent, screen } from "@testing-library/dom";
 
 describe("Given that I am a user on login page", () => {
+	// test pour vérifier que les champs sont vides qaund on clique sur le bouton de Connexion pour l'employé
 	describe("When I do not fill fields and I click on employee button Login In", () => {
 		test("Then It should renders Login page", () => {
 			document.body.innerHTML = LoginUI();
@@ -27,6 +28,7 @@ describe("Given that I am a user on login page", () => {
 		});
 	});
 
+	// test pour vérifier que les champs d'authentification de l'employé sont incorrects qaund on clique sur le bouton de Connexion
 	describe("When I do fill fields in incorrect format and I click on employee button Login In", () => {
 		test("Then It should renders Login page", () => {
 			document.body.innerHTML = LoginUI();
@@ -48,6 +50,7 @@ describe("Given that I am a user on login page", () => {
 		});
 	});
 
+	//
 	describe("When I do fill fields in correct format and I click on employee button Login In", () => {
 		test("Then I should be identified as an Employee in app", () => {
 			document.body.innerHTML = LoginUI();
@@ -64,6 +67,7 @@ describe("Given that I am a user on login page", () => {
 			fireEvent.change(inputPasswordUser, {
 				target: { value: inputData.password },
 			});
+
 			expect(inputPasswordUser.value).toBe(inputData.password);
 
 			const form = screen.getByTestId("form-employee");
@@ -118,6 +122,7 @@ describe("Given that I am a user on login page", () => {
 });
 
 describe("Given that I am a user on login page", () => {
+	// test pour vérifier que les champs sont vides qaund on clique sur le bouton admin Connexion
 	describe("When I do not fill fields and I click on admin button Login In", () => {
 		test("Then It should renders Login page", () => {
 			document.body.innerHTML = LoginUI();
@@ -137,6 +142,7 @@ describe("Given that I am a user on login page", () => {
 		});
 	});
 
+	// test pour vérifier que les champs sont incorrects qaund on clique sur le bouton admin Connexion
 	describe("When I do fill fields in incorrect format and I click on admin button Login In", () => {
 		test("Then it should renders Login page", () => {
 			document.body.innerHTML = LoginUI();
@@ -158,6 +164,7 @@ describe("Given that I am a user on login page", () => {
 		});
 	});
 
+	// test pour vérifier que les champs d'authentification de l'admin sont corrects quand on clique sur le bouton de Connexion
 	describe("When I do fill fields in correct format and I click on admin button Login In", () => {
 		test("Then I should be identified as an HR admin in app", () => {
 			document.body.innerHTML = LoginUI();
@@ -180,7 +187,7 @@ describe("Given that I am a user on login page", () => {
 
 			const form = screen.getByTestId("form-admin");
 
-			// localStorage should be populated with form data
+			// localStorage doit être rempli avec les données du formulaire pour le tester
 			Object.defineProperty(window, "localStorage", {
 				value: {
 					getItem: jest.fn(() => null),
@@ -189,7 +196,7 @@ describe("Given that I am a user on login page", () => {
 				writable: true,
 			});
 
-			// we have to mock navigation to test it
+			// Nous devons simuler la navigation pour la tester
 			const onNavigate = (pathname) => {
 				document.body.innerHTML = ROUTES({ pathname });
 			};

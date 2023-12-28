@@ -36,7 +36,7 @@ export default class {
 	// notamment le statut de la note de frais et la date formatée
 	getBills = () => {
 		if (this.store) {
-			//console.log(this.store);
+			//console.log("store", this.store);
 			return this.store
 				.bills()
 				.list()
@@ -52,9 +52,9 @@ export default class {
 									status: formatStatus(doc.status),
 								};
 							} catch (e) {
-								// if for some reason, corrupted data was introduced, we manage here failing formatDate function
-								// log the error and return unformatted date in that case
-
+								// si pour une raison quelconque, des données corrompues ont été introduites, nous gérons ici la fonction formatDate défaillante
+								// enregistrer l'erreur et renvoie la date non formatée dans ce cas
+								console.log(e, "for", doc);
 								return {
 									...doc,
 									date: doc.date,
@@ -62,7 +62,7 @@ export default class {
 								};
 							}
 						});
-
+					//console.log("bills", bills);
 					return bills;
 				});
 		}

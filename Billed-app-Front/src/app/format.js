@@ -15,5 +15,7 @@ export const formatStatus = (status) => {
 			return "Accepté";
 		case "refused":
 			return "Refused";
+		default:
+			return "Error";
 	}
 };

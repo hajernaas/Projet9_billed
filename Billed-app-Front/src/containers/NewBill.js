@@ -17,12 +17,10 @@ export default class NewBill {
 	}
 
 	//Appeler cette fonction quand l'utilisateur sélectionne un fichier à télécharger.
-
 	handleChangeFile = (e) => {
 		e.preventDefault();
 		//Récupèrer le fichier sélectionné et vérifie son extension
 		const file = this.document.querySelector(`input[data-testid="file"]`).files[0];
-		console.log("files", file);
 		// BUG corrigé - Empêcher la saisie d'un document qui a une extension différente de jpg, jpeg ou png.
 		//Regex pour les extensions autorisées
 		const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i; //utiliser le modificateur "i" qui spécifie une correspondance sans distinction de casse
