@@ -19,11 +19,17 @@ jest.mock("../app/store", () => mockStore);
 
 //Tests pour s'assurer que la page bills fonctionne correctement pour un utilisateur connecté en tant qu'employé.
 describe("Given I am connected as an employee", () => {
+	beforeAll(() => {
+		//Setting up mocked localStorage and employee user
+		Object.defineProperty(window, "localStorage", { value: localStorageMock });
+		window.localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
+	});
+
 	describe("When I am on Bills Page", () => {
 		// Test pour vérifier que l'icône windows en disposition verticale est activé
 		test("Then bill icon in vertical layout should be highlighted", async () => {
 			//Moquer le local storage  et définir le type d'utilisateur pour "Employé"
-			Object.defineProperty(window, "localStorage", {
+			/*	Object.defineProperty(window, "localStorage", {
 				value: localStorageMock,
 			});
 			window.localStorage.setItem(
@@ -31,7 +37,7 @@ describe("Given I am connected as an employee", () => {
 				JSON.stringify({
 					type: "Employee",
 				})
-			);
+			);*/
 			// Créer l'élément root et l'ajoute au corps du document
 			const root = document.createElement("div");
 			root.setAttribute("id", "root");
@@ -57,7 +63,6 @@ describe("Given I am connected as an employee", () => {
 			const dates = screen
 				.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i)
 				.map((a) => a.innerHTML);
-			log("dates", dates);
 			const antiChrono = (a, b) => (a < b ? 1 : -1);
 			const datesSorted = [...dates].sort(antiChrono);
 			//Vérifier que les dates récupérées sont égales aux dates triées
@@ -96,13 +101,14 @@ describe("Given I am connected as an employee", () => {
 			const onNavigate = (pathname) => {
 				document.body.innerHTML = ROUTES({ pathname });
 			};
-			Object.defineProperty(window, "localStorage", { value: localStorageMock });
+
+			/*	Object.defineProperty(window, "localStorage", { value: localStorageMock });
 			window.localStorage.setItem(
 				"user",
 				JSON.stringify({
 					type: "Employee",
 				})
-			);
+			);*/
 			// construire le body via BillsUI
 			document.body.innerHTML = BillsUI({ bills });
 
