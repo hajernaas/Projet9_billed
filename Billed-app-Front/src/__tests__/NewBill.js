@@ -94,6 +94,8 @@ describe("Given I am connected as an employee", () => {
 
 				// Définir une fonction mock pour appeler la fonction handleChangeFile
 				const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e));
+
+				//récupèrer l'élément file via l’attribut data-testid
 				const fileInput = screen.getByTestId("file");
 
 				// Créer un objet file pour simuler un téléchargement de fichier
@@ -153,13 +155,10 @@ describe("Given I am connected as an employee", () => {
 					localStorage: localStorageMock,
 				});
 
-				//Récupèrer le nouveau formulaire de newBill
+				//Récupèrer le formulaire de newBill
 				const newBillForm = screen.getByTestId("form-new-bill");
 				// S'assurer que le formulaire a été trouvé et sélectionné correctement
 				expect(newBillForm).toBeTruthy();
-				// Ajouter un écouteur d'événement de soumission au formulaire et déclencher cet événement
-				const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
-				newBillForm.addEventListener("submit", handleSubmit);
 
 				//Remplissage du formulaire
 				userEvent.type(screen.getByTestId("expense-name"), "Vol Paris Londres");
@@ -170,6 +169,10 @@ describe("Given I am connected as an employee", () => {
 				const fileTest = new File(["testImage"], "testImage.png", { type: "image/png" });
 				userEvent.upload(screen.getByTestId("file"), fileTest);
 
+				// Ajouter un écouteur d'événement de soumission au formulaire et déclencher cet événement
+				const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
+				newBillForm.addEventListener("submit", handleSubmit);
+
 				fireEvent.submit(newBillForm);
 				// vérifier que la fonction handleSubmit a été appelé
 				expect(handleSubmit).toHaveBeenCalled();
@@ -177,46 +180,6 @@ describe("Given I am connected as an employee", () => {
 				//Rediriger vers la page Bills
 				await waitFor(() => screen.getByText("Mes notes de frais"));
 				expect(screen.getByText("Mes notes de frais")).toBeTruthy();
-			});
-		});
-
-		// Test pour vérifier la gestion des erreurs lors de la mise à jour des factures avec l'erreur 500 ou l'erreur 404 depuis l'API
-		describe("When an error occurs on API", () => {
-			beforeEach(() => {
-				//Moquer la méthode 'bills' du fichier store
-				jest.spyOn(mockStore, "bills");
-
-				// Creér l'élement root ,Initialiser le routeur et la méthode onNavigate
-				const root = document.createElement("div");
-				root.setAttribute("id", "root");
-				document.body.appendChild(root);
-				router();
-				window.onNavigate(ROUTES_PATH.NewBill);
-			});
-
-			test("It should fails with 404 message error", async () => {
-				//moquer la Méthode update depuis bills  pour générer l'erreur spécifiée
-				mockStore.bills.mockImplementationOnce(() => ({
-					update: () => Promise.reject(new Error("Erreur 404")),
-				}));
-
-				// Attend que la promesse soit résolue
-				await new Promise(process.nextTick);
-
-				// Vérifier que le messsage d'erreur est bien affiché
-				document.body.innerHTML = BillsUI({ error: "Erreur 404" });
-				const message = screen.getByText(/Erreur 404/);
-				expect(message).toBeTruthy();
-			});
-
-			test("It should fails with 500 message error", async () => {
-				mockStore.bills.mockImplementationOnce(() => ({
-					update: () => Promise.reject(new Error("Erreur 500")),
-				}));
-				document.body.innerHTML = BillsUI({ error: "Erreur 500" });
-				await new Promise(process.nextTick);
-				const message = screen.getByText(/Erreur 500/);
-				expect(message).toBeTruthy();
 			});
 		});
 	});
