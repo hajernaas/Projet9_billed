@@ -22,7 +22,10 @@ describe("Given I am connected as an employee", () => {
 	beforeAll(() => {
 		//Moquer le local storage et définir le type d'utilisateur pour "Employé"
 		Object.defineProperty(window, "localStorage", { value: localStorageMock });
-		window.localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "a@a" }));
+		window.localStorage.setItem(
+			"user",
+			JSON.stringify({ type: "Employee", email: "employee@test.tld", status: "connected" })
+		);
 	});
 
 	describe("When I am on new Bill page", () => {

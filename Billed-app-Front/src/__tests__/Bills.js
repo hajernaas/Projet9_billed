@@ -16,28 +16,22 @@ import router from "../app/Router.js";
 import { formatStatus } from "../app/format.js";
 import { log } from "console";
 jest.mock("../app/store", () => mockStore);
+import ErrorPage from "../views/ErrorPage.js";
 
 //Tests pour s'assurer que la page bills fonctionne correctement pour un utilisateur connecté en tant qu'employé.
 describe("Given I am connected as an employee", () => {
 	beforeAll(() => {
-		//Setting up mocked localStorage and employee user
+		//Configuration d'un localStorage et d'un utilisateur employé
 		Object.defineProperty(window, "localStorage", { value: localStorageMock });
-		window.localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
+		window.localStorage.setItem(
+			"user",
+			JSON.stringify({ type: "Employee", email: "employee@test.tld", status: "connected" })
+		);
 	});
 
 	describe("When I am on Bills Page", () => {
 		// Test pour vérifier que l'icône windows en disposition verticale est activé
 		test("Then bill icon in vertical layout should be highlighted", async () => {
-			//Moquer le local storage  et définir le type d'utilisateur pour "Employé"
-			/*	Object.defineProperty(window, "localStorage", {
-				value: localStorageMock,
-			});
-			window.localStorage.setItem(
-				"user",
-				JSON.stringify({
-					type: "Employee",
-				})
-			);*/
 			// Créer l'élément root et l'ajoute au corps du document
 			const root = document.createElement("div");
 			root.setAttribute("id", "root");
@@ -97,18 +91,9 @@ describe("Given I am connected as an employee", () => {
 	//si on clique sur le bouton 'Nouvelle note de frais'
 	describe("When I am on Bills page and I click on the new bill button ", () => {
 		test("Then I should navigate to newBill page ", () => {
-			//La fonction OnNavigate permet de définir une route avec un path particulier
-			const onNavigate = (pathname) => {
-				document.body.innerHTML = ROUTES({ pathname });
-			};
+			//définir une fonction OnNavigate simulé
+			const onNavigate = jest.fn();
 
-			/*	Object.defineProperty(window, "localStorage", { value: localStorageMock });
-			window.localStorage.setItem(
-				"user",
-				JSON.stringify({
-					type: "Employee",
-				})
-			);*/
 			// construire le body via BillsUI
 			document.body.innerHTML = BillsUI({ bills });
 
@@ -124,13 +109,15 @@ describe("Given I am connected as an employee", () => {
 			const handleClickNewBill = jest.fn(bill.handleClickNewBill);
 			//récupèrer l'élément btn-new-bill (bouton nouvelle note de frais) via l’attribut data-testid grace au sélecteur getByTestId
 			const btnNewBill = screen.getByTestId("btn-new-bill");
+			expect(btnNewBill).toBeTruthy();
+
 			btnNewBill.addEventListener("click", handleClickNewBill);
 			//user-event simule entièrement les interactions utilisateurs
 			userEvent.click(btnNewBill);
 			//pour s'assurer que la fonction handleClickNewBill a été appelée avec des arguments spécifiques.
 			expect(handleClickNewBill).toHaveBeenCalled();
-			//pour tester si la chaine est true
-			expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+			// S'assurer que la fonction onNavigate a été appelée avec le chemin correct
+			expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["NewBill"]);
 		});
 	});
 
@@ -159,7 +146,7 @@ describe("Given I am connected as an employee", () => {
 			$.fn.modal = jest.fn(() => modaleFile.classList.add("show"));
 		});
 
-		test("Then I should check if modal is diplayed", () => {
+		test("Then I should check if modal is diplayed", async () => {
 			const handleClickIconEye = jest.fn((icon) => billsContainer.handleClickIconEye(icon));
 			const iconEye = screen.getAllByTestId("icon-eye");
 			iconEye.forEach((icon) => {
@@ -167,17 +154,23 @@ describe("Given I am connected as an employee", () => {
 				userEvent.click(icon);
 				expect(handleClickIconEye).toHaveBeenCalled();
 			});
-			expect(modaleFile).toHaveClass("show");
-			expect(screen.getByText("Justificatif")).toBeTruthy();
-			expect(bills[0].fileUrl).toBeTruthy();
-			expect(bills[0].fileName).toBeTruthy();
+
+			//expect(modaleFile).toHaveClass("show");
+			expect(modaleFile.classList).toContain("show");
+
+			await waitFor(() => {
+				expect(screen.getByText("Justificatif")).toBeTruthy();
+				expect(bills[0].fileUrl).toBeTruthy();
+				expect(bills[0].fileName).toBeTruthy();
+			});
 		});
 
 		//Tester que le modal est fermé lorsque on clique sur le bouton de fermeture
 		test("then I should closed the modal when the close button is clicked", () => {
 			const btnCloseModale = modaleFile.querySelector(".close");
 			userEvent.click(btnCloseModale);
-			expect(modaleFile).not.toHaveClass("show");
+			//expect(modaleFile).not.toHaveClass("show");
+			expect(modaleFile.classList).not.toContain("show");
 		});
 	});
 
@@ -211,20 +204,25 @@ describe("Given I am a user connected as employee", () => {
 			});
 			localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "a@a" }));
 
+			//jest.spyOn(mockStore.bills(), "list");
 			const root = document.createElement("div");
 			root.setAttribute("id", "root");
 			document.body.append(root);
 			router();
 			window.onNavigate(ROUTES_PATH.Bills);
 
-			//s'assuer que le titre de la page Bills apparait
-			await waitFor(() => screen.getByText("Mes notes de frais"));
-			expect(screen.getByText("Mes notes de frais")).toBeTruthy();
-			// s'assurer qu'il y a 4 bills simulées qui ont été récupérées
-			const fetchedBills = screen.getByTestId("tbody").querySelectorAll("tr");
-			expect(fetchedBills.length).toBe(4);
-			//s'assurer qu'il y a un bouton "Nouvelle note de frais "
-			expect(screen.getByTestId("btn-new-bill")).toBeTruthy();
+			await waitFor(() => {
+				//s'assuer que le titre de la page Bills apparait
+				expect(screen.getByText("Mes notes de frais")).toBeTruthy();
+				// s'assurer qu'il y a 4 bills simulées qui ont été récupérées
+				expect(screen.getByTestId("tbody").querySelectorAll("tr").length).toBe(4);
+				expect(screen.getByText("encore")).toBeTruthy();
+				expect(screen.getByText("test1")).toBeTruthy();
+				expect(screen.getByText("test2")).toBeTruthy();
+				expect(screen.getByText("test3")).toBeTruthy();
+				//s'assurer qu'il y a un bouton "Nouvelle note de frais "
+				expect(screen.getByTestId("btn-new-bill")).toBeTruthy();
+			});
 		});
 
 		describe("When an error occurs on API", () => {
