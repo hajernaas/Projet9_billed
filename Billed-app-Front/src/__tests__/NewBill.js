@@ -122,14 +122,14 @@ describe("Given I am connected as an employee", () => {
 					document.body.innerHTML = ROUTES({ pathname });
 				};
 
-				const store = null;
+				//const store = null;
+				const store = mockStore;
 				const newBill = new NewBill({
 					document,
 					onNavigate,
 					store,
 					localStorage,
 				});
-
 				const alertWindows = jest.spyOn(window, "alert").mockImplementation();
 				const fileInput = screen.getByTestId("file");
 				const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e));
@@ -143,8 +143,8 @@ describe("Given I am connected as an employee", () => {
 			});
 		});
 
-		//Test que la facture est créée après soumission du formulaire
 		describe("When the user submits the form to create a new bill", () => {
+			//Test pour vérifier que la facture est créée après soumission du formulaire
 			test("Then handleSubmit method is called and I'm redirected to Bills Page", async () => {
 				document.body.innerHTML = NewBillUI();
 				const onNavigate = (pathname) => (document.body.innerHTML = ROUTES({ pathname }));
@@ -180,6 +180,35 @@ describe("Given I am connected as an employee", () => {
 				//Rediriger vers la page Bills
 				await waitFor(() => screen.getByText("Mes notes de frais"));
 				expect(screen.getByText("Mes notes de frais")).toBeTruthy();
+			});
+
+			// Test pour vérifier la gestion des erreurs lors de la création de la factures avec l'erreur 500 depuis l'API
+			describe("When an error occurs on API", () => {
+				test("It should fails with 500 message error", async () => {
+					//Moquer la méthode 'bills' du fichier store
+					jest.spyOn(mockStore, "bills");
+
+					// Creér l'élement root ,Initialiser le routeur et la méthode onNavigate
+					const root = document.createElement("div");
+					root.setAttribute("id", "root");
+					document.body.appendChild(root);
+					router();
+					window.onNavigate(ROUTES_PATH.NewBill);
+
+					mockStore.bills.mockImplementationOnce(() => ({
+						create: (bill) => {
+							return Promise.reject(new Error("Erreur 500"));
+						},
+					}));
+
+					document.body.innerHTML = BillsUI({ error: "Erreur 500" });
+
+					await new Promise(process.nextTick);
+					const message = screen.getByText(/Erreur 500/);
+					await waitFor(() => {
+						expect(message).toBeTruthy();
+					});
+				});
 			});
 		});
 	});

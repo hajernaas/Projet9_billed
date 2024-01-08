@@ -134,7 +134,7 @@ describe("Given I am connected as an employee", () => {
 		});
 	});
 
-	// test pour Vérifier que la modale contenant le justificatif de la note de frais apparaît bien
+	//Test pour Vérifier que la modale contenant le justificatif de la note de frais apparaît bien
 	describe("When I am on Bills Page and click on an eyed icon button", () => {
 		let billsContainer;
 		let onNavigate;
@@ -169,8 +169,8 @@ describe("Given I am connected as an employee", () => {
 			});
 			expect(modaleFile).toHaveClass("show");
 			expect(screen.getByText("Justificatif")).toBeTruthy();
-			/*expect(bills[0].fileUrl).toBeTruthy();
-			expect(bills[0].fileName).toBeTruthy();*/
+			expect(bills[0].fileUrl).toBeTruthy();
+			expect(bills[0].fileName).toBeTruthy();
 		});
 
 		//Tester que le modal est fermé lorsque on clique sur le bouton de fermeture

@@ -93,6 +93,7 @@ export default class {
 			bills.forEach((b) => {
 				$(`#open-bill${b.id}`).css({ background: "#0D5AE5" });
 			});
+
 			$(`#open-bill${bill.id}`).css({ background: "#2A2B35" });
 			$(".dashboard-right-container div").html(DashboardFormUI(bill));
 			$(".vertical-navbar").css({ height: "150vh" });
@@ -132,9 +133,13 @@ export default class {
 	};
 
 	//  Cette fonction gère l'affichage des tickets selon son statut (index:pending,accepted,refused) et la gestion de l'icône en forme de flèche.
+
 	handleShowTickets(e, bills, index) {
 		if (this.counter === undefined || this.index !== index) this.counter = 0;
+
 		if (this.index === undefined || this.index !== index) this.index = index;
+
+		//flèche ouvert
 		if (this.counter % 2 === 0) {
 			$(`#arrow-icon${this.index}`).css({ transform: "rotate(0deg)" });
 			$(`#status-bills-container${this.index}`).html(
@@ -142,17 +147,18 @@ export default class {
 			);
 			this.counter++;
 		} else {
+			//flèche fermé
 			$(`#arrow-icon${this.index}`).css({ transform: "rotate(90deg)" });
 			$(`#status-bills-container${this.index}`).html("");
 			this.counter++;
 		}
-		//Ajouter un écouteur d'événement 'clic' à chaque ticket pour gérer son traitement
+
 		//Pour empêcher tout comportement inattendu pouvant survenir en raison de plusieurs écouteurs.
 		//Bug Corrigé :supprimer l'écouteur d'événement avant de l'ajouter à nouveau,
 		//La méthode off('click') supprime tout gestionnaire d'événement de clic précédemment attaché du
 		//l'élément sélectionné avec l'ID open-bill{bill.id}, la méthode click attache un nouveau le gestionnaire d'événement
 		// Cela garantit que le gestionnaire d'événements click n'est pas dupliqué
-
+		//Ajouter un écouteur d'événement 'clic' à chaque ticket pour gérer son traitement
 		bills.forEach((bill) => {
 			$(`#open-bill${bill.id}`)
 				.off("click")
