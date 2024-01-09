@@ -198,13 +198,6 @@ describe("Given I am connected as an employee", () => {
 describe("Given I am a user connected as employee", () => {
 	describe("When I navigate to Bills Page", () => {
 		test("fetches bills from mock API GET", async () => {
-			//Configuration d'un localStorage simulé et d'un utilisateur employé avec un e-mail
-			Object.defineProperty(window, "localStorage", {
-				value: localStorageMock,
-			});
-			localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "a@a" }));
-
-			//jest.spyOn(mockStore.bills(), "list");
 			const root = document.createElement("div");
 			root.setAttribute("id", "root");
 			document.body.append(root);
@@ -231,14 +224,6 @@ describe("Given I am a user connected as employee", () => {
 				//appels à l'objet mockStore en appelant la méthode bills
 				jest.spyOn(mockStore, "bills");
 
-				Object.defineProperty(window, "localStorage", { value: localStorageMock });
-				window.localStorage.setItem(
-					"user",
-					JSON.stringify({
-						type: "Employee",
-						email: "a@a",
-					})
-				);
 				const root = document.createElement("div");
 				root.setAttribute("id", "root");
 				document.body.appendChild(root);
@@ -246,6 +231,7 @@ describe("Given I am a user connected as employee", () => {
 			});
 
 			//TEST : échec de récupération des données (la page Web n'a pas été trouvée)
+
 			test("fetches bills from an API and fails with 404 message error", async () => {
 				//Accepte la fonction list() qui sera utilisée comme une implémentation de simulation
 				// pour un appel à la fonction bills()
@@ -260,11 +246,11 @@ describe("Given I am a user connected as employee", () => {
 				});
 
 				window.onNavigate(ROUTES_PATH.Bills);
-				await new Promise(process.nextTick);
 
-				// Résultat attendu
-				const message = screen.getByText(/Erreur 404/);
-				expect(message).toBeTruthy();
+				await new Promise(process.nextTick);
+				await waitFor(() => {
+					expect(screen.getByText(/Erreur 404/)).toBeTruthy();
+				});
 			});
 
 			//TEST : échec de récupération des données (problème inattendu dans le serveur)
@@ -279,8 +265,9 @@ describe("Given I am a user connected as employee", () => {
 
 				window.onNavigate(ROUTES_PATH.Bills);
 				await new Promise(process.nextTick);
-				const message = screen.getByText(/Erreur 500/);
-				expect(message).toBeTruthy();
+				await waitFor(() => {
+					expect(screen.getByText(/Erreur 500/)).toBeTruthy();
+				});
 			});
 		});
 	});

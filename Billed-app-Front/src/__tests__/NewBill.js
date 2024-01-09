@@ -146,11 +146,14 @@ describe("Given I am connected as an employee", () => {
 			});
 		});
 
-		describe("When the user submits the form to create a new bill", () => {
+		//Test d'intégration Post newBill
+		describe("When the user submits the form", () => {
 			//Test pour vérifier que la facture est créée après soumission du formulaire
-			test("Then handleSubmit method is called and I'm redirected to Bills Page", async () => {
+			test("Then the bill is created, handleSubmit method is called and I'm redirected to Bills Page", async () => {
 				document.body.innerHTML = NewBillUI();
+
 				const onNavigate = (pathname) => (document.body.innerHTML = ROUTES({ pathname }));
+
 				const newBill = new NewBill({
 					document,
 					onNavigate,
@@ -185,31 +188,42 @@ describe("Given I am connected as an employee", () => {
 				expect(screen.getByText("Mes notes de frais")).toBeTruthy();
 			});
 
-			// Test pour vérifier la gestion des erreurs lors de la création de la factures avec l'erreur 500 depuis l'API
 			describe("When an error occurs on API", () => {
 				test("It should fails with 500 message error", async () => {
-					//Moquer la méthode 'bills' du fichier store
+					//Moquer la méthode 'bills' du fichier store et de la méthode console.error
 					jest.spyOn(mockStore, "bills");
+					jest.spyOn(console, "error").mockImplementation(() => {});
 
-					// Creér l'élement root ,Initialiser le routeur et la méthode onNavigate
 					const root = document.createElement("div");
 					root.setAttribute("id", "root");
 					document.body.appendChild(root);
 					router();
 					window.onNavigate(ROUTES_PATH.NewBill);
 
+					//moquer la méthode update pour générer l'erreur spécifiée
 					mockStore.bills.mockImplementationOnce(() => ({
-						create: (bill) => {
+						update: () => {
 							return Promise.reject(new Error("Erreur 500"));
 						},
 					}));
 
-					document.body.innerHTML = BillsUI({ error: "Erreur 500" });
+					const store = mockStore;
+					const newBill = new NewBill({
+						document,
+						onNavigate,
+						store,
+						localStorage,
+					});
+
+					const form = screen.getByTestId("form-new-bill");
+					const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
+					form.addEventListener("submit", handleSubmit);
+					fireEvent.submit(form);
 
 					await new Promise(process.nextTick);
-					const message = screen.getByText(/Erreur 500/);
+					//attendre l'appel du console.error
 					await waitFor(() => {
-						expect(message).toBeTruthy();
+						expect(console.error).toBeCalled();
 					});
 				});
 			});
