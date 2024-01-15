@@ -16,7 +16,6 @@ import router from "../app/Router.js";
 import { formatStatus } from "../app/format.js";
 import { log } from "console";
 jest.mock("../app/store", () => mockStore);
-import ErrorPage from "../views/ErrorPage.js";
 
 //Tests pour s'assurer que la page bills fonctionne correctement pour un utilisateur connecté en tant qu'employé.
 describe("Given I am connected as an employee", () => {
@@ -27,6 +26,10 @@ describe("Given I am connected as an employee", () => {
 			"user",
 			JSON.stringify({ type: "Employee", email: "employee@test.tld", status: "connected" })
 		);
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
 	});
 
 	describe("When I am on Bills Page", () => {
@@ -41,7 +44,6 @@ describe("Given I am connected as an employee", () => {
 			router();
 			window.onNavigate(ROUTES_PATH.Bills);
 
-			//to-do write expect expression
 			const WindowIcon = screen.getByTestId("icon-window");
 			await waitFor(() => WindowIcon);
 			//Ajouter la fonction expect() pour effectuer une assertion de test pour vérifier
@@ -71,7 +73,7 @@ describe("Given I am connected as an employee", () => {
 		});
 	});
 
-	// test pour vérifier que le Loader s'affiche bien.
+	// Test pour vérifier que le Loader s'affiche bien.
 	describe("When I am on Bills page but it is loading", () => {
 		test("Then, Loading page should be rendered", () => {
 			document.body.innerHTML = BillsUI({ loading: true });
@@ -107,7 +109,7 @@ describe("Given I am connected as an employee", () => {
 
 			//Déclarer la simulation de la fonction handleClickNewBill à l'aide de jest.fn()
 			const handleClickNewBill = jest.fn(bill.handleClickNewBill);
-			//récupèrer l'élément btn-new-bill (bouton nouvelle note de frais) via l’attribut data-testid grace au sélecteur getByTestId
+			//récupèrer l'élément btn-new-bill (bouton nouvelle note de frais) via l’attribut data-testid grâce au sélecteur getByTestId
 			const btnNewBill = screen.getByTestId("btn-new-bill");
 			expect(btnNewBill).toBeTruthy();
 
@@ -121,7 +123,7 @@ describe("Given I am connected as an employee", () => {
 		});
 	});
 
-	//Test pour Vérifier que la modale contenant le justificatif de la note de frais apparaît bien
+	//Test pour Vérifier que la modale contenant le justificatif de la note de frais est bien apparu
 	describe("When I am on Bills Page and click on an eyed icon button", () => {
 		let billsContainer;
 		let onNavigate;
@@ -155,8 +157,7 @@ describe("Given I am connected as an employee", () => {
 				expect(handleClickIconEye).toHaveBeenCalled();
 			});
 
-			//expect(modaleFile).toHaveClass("show");
-			expect(modaleFile.classList).toContain("show");
+			expect(modaleFile).toHaveClass("show");
 
 			await waitFor(() => {
 				expect(screen.getByText("Justificatif")).toBeTruthy();
@@ -169,8 +170,7 @@ describe("Given I am connected as an employee", () => {
 		test("then I should closed the modal when the close button is clicked", () => {
 			const btnCloseModale = modaleFile.querySelector(".close");
 			userEvent.click(btnCloseModale);
-			//expect(modaleFile).not.toHaveClass("show");
-			expect(modaleFile.classList).not.toContain("show");
+			expect(modaleFile).not.toHaveClass("show");
 		});
 	});
 
@@ -228,6 +228,9 @@ describe("Given I am a user connected as employee", () => {
 				root.setAttribute("id", "root");
 				document.body.appendChild(root);
 				router();
+			});
+			afterEach(() => {
+				jest.clearAllMocks();
 			});
 
 			//TEST : échec de récupération des données (la page Web n'a pas été trouvée)

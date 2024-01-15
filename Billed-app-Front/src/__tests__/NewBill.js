@@ -7,8 +7,6 @@ import { screen, fireEvent, waitFor } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import NewBillUI from "../views/NewBillUI";
 import NewBill from "../containers/NewBill.js";
-import Bills from "../containers/Bills.js";
-import BillsUI from "../views/BillsUI.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes";
 import { localStorageMock } from "../__mocks__/localStorage";
 import mockStore from "../__mocks__/store";
@@ -26,6 +24,10 @@ describe("Given I am connected as an employee", () => {
 			"user",
 			JSON.stringify({ type: "Employee", email: "employee@test.tld", status: "connected" })
 		);
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
 	});
 
 	describe("When I am on new Bill page", () => {
@@ -87,6 +89,7 @@ describe("Given I am connected as an employee", () => {
 				const onNavigate = (pathname) => {
 					document.body.innerHTML = ROUTES({ pathname });
 				};
+
 				const store = mockStore;
 				const newBill = new NewBill({
 					document,
@@ -125,7 +128,6 @@ describe("Given I am connected as an employee", () => {
 					document.body.innerHTML = ROUTES({ pathname });
 				};
 
-				//const store = null;
 				const store = mockStore;
 				const newBill = new NewBill({
 					document,
@@ -151,7 +153,6 @@ describe("Given I am connected as an employee", () => {
 			//Test pour vérifier que la facture est créée après soumission du formulaire
 			test("Then the bill is created, handleSubmit method is called and I'm redirected to Bills Page", async () => {
 				document.body.innerHTML = NewBillUI();
-
 				const onNavigate = (pathname) => (document.body.innerHTML = ROUTES({ pathname }));
 
 				const newBill = new NewBill({
@@ -175,10 +176,9 @@ describe("Given I am connected as an employee", () => {
 				const fileTest = new File(["testImage"], "testImage.png", { type: "image/png" });
 				userEvent.upload(screen.getByTestId("file"), fileTest);
 
-				// Ajouter un écouteur d'événement de soumission au formulaire et déclencher cet événement
 				const handleSubmit = jest.fn((e) => newBill.handleSubmit(e));
+				// Ajouter un écouteur d'événement de soumission au formulaire et déclencher cet événement
 				newBillForm.addEventListener("submit", handleSubmit);
-
 				fireEvent.submit(newBillForm);
 				// vérifier que la fonction handleSubmit a été appelé
 				expect(handleSubmit).toHaveBeenCalled();
